@@ -1,0 +1,15 @@
+{
+  "name": "pc-on-iphone-website",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Website for PC-on-iPhone, built with Vite and plain CSS frosted glass",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}
