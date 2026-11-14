@@ -1,0 +1,940 @@
+/* ============================================================
+   PC on iPhone — design tokens & base layer
+   ============================================================ */
+
+:root {
+  /* Colour --------------------------------------------------- */
+  --page: #ffffff;
+  --ink: #14161d;
+  --ink-soft: rgba(20, 22, 29, 0.66);
+  --ink-faint: rgba(20, 22, 29, 0.42);
+  --tint: #2f6ae0;
+  --tint-2: #7a3ff2;
+
+  --lift: rgba(20, 30, 60, 0.05);
+  --lift-strong: rgba(20, 30, 60, 0.09);
+  --hairline: rgba(20, 30, 60, 0.12);
+  --menu-bg: rgba(255, 255, 255, 0.97);
+
+  /* Layout --------------------------------------------------- */
+  --page-max: 1120px;
+  --gutter: clamp(20px, 5vw, 56px);
+  --radius-lg: 34px;
+  --radius-md: 22px;
+  --radius-sm: 14px;
+
+  /* Type ----------------------------------------------------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+
+  color-scheme: light;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #000000;
+    --ink: #f5f6fa;
+    --ink-soft: rgba(245, 246, 250, 0.68);
+    --ink-faint: rgba(245, 246, 250, 0.42);
+    --tint: #4c8dff;
+    --tint-2: #9a6bff;
+
+    --lift: rgba(255, 255, 255, 0.09);
+    --lift-strong: rgba(255, 255, 255, 0.15);
+    --hairline: rgba(255, 255, 255, 0.14);
+    --menu-bg: rgba(16, 17, 22, 0.97);
+
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  /* 不要在这里设背景色：根元素一旦有不透明背景，body 的背景就不再
+     传播到画布，而是绘制在 body 盒子上，从而盖住 z-index:-1 的
+     body::before 光晕层（首页“背景被白色挡住”的根因）。
+     底色统一交给 body，由它传播成画布底色。 */
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+/* Page backdrop: 纯色底 + 极淡的光晕
+   （毛玻璃需要有东西可模糊，这层光晕就是它的“前景”） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(38vmax 30vmax at 16% 4%, rgba(76, 141, 255, 0.14), transparent 62%),
+    radial-gradient(32vmax 26vmax at 86% 10%, rgba(154, 107, 255, 0.12), transparent 64%),
+    radial-gradient(36vmax 30vmax at 64% 96%, rgba(24, 214, 190, 0.09), transparent 66%);
+}
+
+@media (prefers-color-scheme: dark) {
+  body::before { opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 640;
+  letter-spacing: -0.022em;
+  line-height: 1.1;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2.6rem, 7vw, 4.6rem); }
+h2 { font-size: clamp(1.9rem, 4vw, 2.9rem); }
+h3 { font-size: clamp(1.1rem, 1.8vw, 1.3rem); letter-spacing: -0.012em; }
+
+p {
+  margin: 0;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.muted { color: var(--ink-faint); }
+
+/* 选区与键盘焦点 */
+::selection { background: color-mix(in srgb, var(--tint) 30%, transparent); }
+
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+
+/* ============================================================
+   Layout primitives
+   ============================================================ */
+
+.shell {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+.section {
+  padding-block: clamp(64px, 10vw, 120px);
+}
+
+.stack > * + * { margin-top: 1.25rem; }
+.stack-lg > * + * { margin-top: 1.75rem; }
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .grid { gap: 24px; }
+}
+
+/* auto-fill：最后一行卡片不再拉伸占满整行 */
+.grid-2 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+
+/* ============================================================
+   Glass surfaces — 纯 CSS 毛玻璃
+   ============================================================ */
+
+.glass {
+  position: relative;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    0 18px 44px -20px rgba(30, 45, 90, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px var(--hairline);
+  overflow: hidden;
+}
+
+/* 不支持 backdrop-filter 时用更实的底色兜底 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(255, 255, 255, 0.94); }
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass {
+    background: rgba(26, 28, 34, 0.66);
+    box-shadow:
+      0 18px 44px -20px rgba(0, 0, 0, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.09),
+      inset 0 0 0 1px var(--hairline);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass { background: rgba(24, 26, 31, 0.94); }
+  }
+}
+
+.glass--sm { border-radius: var(--radius-sm); }
+.glass--md { border-radius: var(--radius-md); }
+
+.glass-body {
+  position: relative;
+  z-index: 1;
+  padding: clamp(26px, 4vw, 34px);
+}
+
+/* Sheen along the top edge */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 34%);
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+
+/* ============================================================
+   Navigation
+   ============================================================ */
+
+.site-nav-wrap {
+  /* 固定顶部：内容正常文档流滚动，导航永远在视口上方 */
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top)); 
+  left: 0;
+  right: 0;
+  z-index: 50;
+  padding-inline: var(--gutter);
+  pointer-events: none;
+  transition: filter 0.25s ease;
+}
+
+/* 滚起来后给导航加一层投影，和内容区分开 */
+.site-nav-wrap[data-stuck="true"] {
+  filter: drop-shadow(0 10px 24px rgba(20, 30, 60, 0.12));
+}
+
+@media (prefers-color-scheme: dark) {
+  .site-nav-wrap[data-stuck="true"] {
+    filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
+  }
+}
+
+.site-nav-wrap .site-nav { pointer-events: auto; }
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 8px 18px;
+  border-radius: 999px;
+  corner-shape: squircle;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 640;
+  letter-spacing: -0.02em;
+  font-size: 0.98rem;
+  white-space: nowrap;
+  margin-right: auto;
+}
+
+/* ============================================================
+   💡 全站新 Logo 魔法替换区
+   ============================================================ */
+.brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px; 
+  display: grid;
+  place-items: center;
+  background: none !important; 
+  box-shadow: none !important; 
+  flex: none;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 隐藏所有 HTML 里残留的旧 SVG 或 IMG */
+.brand-mark svg,
+.brand-mark img {
+  display: none !important;
+}
+
+/* 用伪元素强制挂载全新图片（确保图片路径为 /logo.PNG） */
+.brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('./logo.PNG');
+  background-size: cover;
+  background-position: center;
+  border-radius: inherit;
+}
+
+/* 深色模式切换为深色版 Logo */
+@media (prefers-color-scheme: dark) {
+  .brand-mark::after { background-image: url('./logo-dark.webp'); }
+}
+/* ============================================================ */
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: nowrap; /* 💡 防止挤压换行 */
+}
+
+.nav-links a {
+  display: block;
+  padding: 8px 12px; /* 💡 稍微缩小两侧内边距，给文字留空间 */
+  border-radius: 999px;
+  corner-shape: squircle;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  transition: background-color 0.18s ease, color 0.18s ease;
+  white-space: nowrap; /* 💡 核心：强制文字不折行 */
+}
+
+.nav-links a:hover { color: var(--ink); background: var(--lift); }
+
+.nav-links a[aria-current="page"] {
+  color: var(--ink);
+  background: var(--lift-strong);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.nav-cta {
+  padding: 9px 18px;
+  border-radius: 999px;
+  corner-shape: squircle;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #16181f;
+  color: #fff;
+  white-space: nowrap;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.nav-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px -6px rgba(20, 30, 60, 0.35);
+}
+
+/* 深色模式下 CTA 反色，避免黑底黑按钮看不清 */
+@media (prefers-color-scheme: dark) {
+  .nav-cta {
+    background: #f5f6fa;
+    color: #0c0d12;
+  }
+  .nav-cta:hover {
+    box-shadow: 0 8px 22px -6px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.nav-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--lift);
+  color: var(--ink);
+  cursor: pointer;
+  place-items: center;
+}
+
+/* 移动端导航下拉菜单修复 */
+@media (max-width: 950px) { /* 💡 稍微放宽了触发汉堡菜单的阈值，防止电脑小窗挤压 */
+  .nav-toggle { display: grid; }
+  
+  .site-nav {
+    position: relative;
+    overflow: visible !important; 
+    z-index: 100; 
+  }
+
+  .nav-links {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 10px; 
+    right: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px;
+    border-radius: 24px; 
+    background: var(--menu-bg);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.12), inset 0 0 0 1px var(--hairline);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+    z-index: 101;
+  }
+
+  .site-nav[data-open="true"] .nav-links {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  .nav-links a { 
+    padding: 12px 14px; 
+    border-radius: 14px; 
+  }
+  .nav-cta { display: none; }
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px 26px;
+  border: 0;
+  border-radius: 999px;
+  corner-shape: squircle;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.btn--primary {
+  background: linear-gradient(135deg, #2f7dff, #1c5af0 55%, #4a5cf0);
+  color: #fff;
+  box-shadow:
+    0 12px 30px -12px rgba(20, 80, 224, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.btn--primary:hover {
+  box-shadow:
+    0 16px 38px -12px rgba(20, 80, 224, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.btn--primary svg { transition: transform 0.18s ease; }
+.btn--primary:hover svg { transform: translateX(3px); }
+
+.btn--ghost {
+  background: var(--lift);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.btn:hover { transform: translateY(-2px); }
+.btn--ghost:hover { background: var(--lift-strong); }
+.btn:active { transform: translateY(0); }
+
+/* ============================================================
+   Hero
+   ============================================================ */
+
+.hero {
+  padding-top: calc(100px + env(safe-area-inset-top)); 
+  padding-bottom: clamp(40px, 6vw, 72px);
+}
+
+.hero-inner {
+  display: grid;
+  gap: clamp(30px, 5vw, 60px);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; }
+}
+
+.hero h1 .grad {
+  background: linear-gradient(105deg, #2f6ae0 0%, #7a3ff2 46%, #0d9e85 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
+  max-width: 46ch;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px; 
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+.hero-meta span { display: inline-flex; align-items: center; gap: 7px; }
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #46d6a8;
+  box-shadow: 0 0 10px #46d6a8;
+}
+
+/* Phone mock ------------------------------------------------ */
+
+.phone-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: clamp(10px, 2vw, 20px);
+}
+
+/* 深色背景下给手机截图垫一层品牌色辉光，避免融入黑底 */
+.phone-stage::before {
+  content: "";
+  position: absolute;
+  inset: -6% -4%;
+  background: radial-gradient(
+    58% 52% at 50% 44%,
+    color-mix(in srgb, var(--tint) 16%, transparent),
+    transparent 72%
+  );
+  filter: blur(8px);
+}
+
+.phone-stage > * { position: relative; z-index: 1; }
+
+.hero-shot {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 34px 60px rgba(0, 0, 0, 0.55));
+}
+
+/* ============================================================
+   Feature cards
+   ============================================================ */
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tint) 16%, transparent),
+    color-mix(in srgb, var(--tint-2) 16%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.card-icon svg { width: 18px; height: 18px; opacity: 0.95; color: var(--tint); }
+
+/* 可交互卡片：hover 轻微上浮 */
+article.glass {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+article.glass:hover { transform: translateY(-3px); }
+
+@media (prefers-reduced-motion: reduce) {
+  article.glass, article.glass:hover { transition: none; transform: none; }
+}
+
+.card p { 
+  margin-top: 14px; 
+  font-size: 0.95rem; 
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Steps / numbered list
+   ============================================================ */
+
+.steps { counter-reset: step; }
+
+.step {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  padding: clamp(24px, 4vw, 30px); 
+}
+
+.step::before {
+  content: counter(step);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 650;
+  background: var(--lift-strong);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+/* ============================================================
+   FAQ accordion
+   ============================================================ */
+
+.faq-list { display: grid; gap: 16px; }
+
+.faq-item { padding: 0; }
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: clamp(20px, 3vw, 24px);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  list-style: none;
+}
+
+.faq-item summary::-webkit-details-marker { display: none; }
+
+.faq-item summary .plus {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  position: relative;
+  transition: transform 0.22s ease;
+}
+
+.faq-item summary .plus::before,
+.faq-item summary .plus::after {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: 1.6px;
+  background: currentColor;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+.faq-item summary .plus::after { transform: rotate(90deg); transition: transform 0.22s ease; }
+.faq-item[open] summary .plus::after { transform: rotate(0deg); }
+
+.faq-answer {
+  padding: 0 clamp(20px, 3vw, 24px) clamp(20px, 3vw, 24px);
+  font-size: 0.95rem;
+}
+
+.faq-answer p + p { margin-top: 0.7rem; }
+
+/* ============================================================
+   Page header (inner pages)
+   ============================================================ */
+
+.page-head {
+  padding-top: calc(100px + env(safe-area-inset-top)); 
+  padding-bottom: clamp(20px, 3vw, 36px);
+  display: grid;
+  gap: 16px;
+  max-width: 62ch;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+.site-footer {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(56px, 8vw, 100px); 
+  padding-bottom: 40px;
+  pointer-events: none;
+}
+
+.site-footer .glass { pointer-events: auto; }
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 40px;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: clamp(24px, 4vw, 32px);
+}
+
+.footer-brand { display: grid; gap: 8px; max-width: 30ch; }
+.footer-brand p { font-size: 0.85rem; }
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 26px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.footer-links a:hover { color: var(--ink); }
+
+.footer-legal {
+  margin-top: 18px;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+/* ============================================================
+   Utilities
+   ============================================================ */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hairline), transparent);
+  border: 0;
+  margin: 0;
+}
+
+/* ==== HTML 优化配套工具类 ==== */
+
+/* 行内代码 */
+code {
+  background: var(--lift-strong);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85em;
+  color: var(--tint);
+}
+
+/* 项目标签（画廊等页面的卡片角标） */
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  corner-shape: squircle;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  background: var(--lift);
+  box-shadow: inset 0 0 0 1px var(--hairline);
+}
+
+.mb-40 {
+  margin-bottom: clamp(32px, 5vw, 40px); 
+}
+
+.pt-0 {
+  padding-top: 0 !important;
+}
+
+.hero-title {
+  font-size: clamp(2.4rem, 4.6vw, 4.2rem) !important; 
+  letter-spacing: -0.03em !important;
+  white-space: nowrap;
+}
+
+.cta-body {
+  display: grid;
+  gap: 24px; 
+  justify-items: start;
+  padding: clamp(32px, 6vw, 56px);
+}
+
+.cta-title {
+  max-width: 22ch;
+}
+
+.cta-desc {
+  max-width: 52ch;
+}
+
+.step-desc {
+  margin-top: 10px; 
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+/* ============================================================
+   🗺️ 网站地图（每页页脚前的页面导航）
+   ============================================================ */
+.sitemap-section {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) clamp(28px, 5vw, 48px);
+}
+
+.sitemap-crumb {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 0;
+  border-top: 1px solid var(--hairline);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.sitemap-crumb .brand-mark { width: 26px; height: 26px; border-radius: 6px; }
+.sitemap-crumb .crumb-sep { color: var(--ink-faint); }
+
+.sitemap-list {
+  border-top: 1px solid var(--hairline);
+}
+
+.sitemap-list a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 2px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--ink);
+  transition: color 0.18s ease;
+}
+
+.sitemap-list a:hover { color: var(--tint); }
+
+.sitemap-list a[aria-current="page"] {
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+.sitemap-list .go {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: var(--ink-faint);
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.sitemap-list a:hover .go { color: var(--tint); transform: translateX(2px); }
+
+/* ============================================================
+   🍎 iOS 式连续曲率圆角（Squircle）
+   ============================================================ */
+@supports (corner-shape: squircle) {
+  :root {
+    --radius-lg: 46px;
+    --radius-md: 30px;
+    --radius-sm: 20px;
+  }
+
+  .glass,
+  .glass--md,
+  .glass--sm,
+  .card-icon,
+  .nav-links,
+  .nav-links a,
+  .brand-mark,
+  .sitemap-crumb .brand-mark,
+  code,
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  summary:focus-visible,
+  textarea:focus-visible { corner-shape: squircle; }
+
+  .card-icon { border-radius: 16px; }
+  .nav-links { border-radius: 32px; }
+  .nav-links a { corner-shape: squircle; }
+  .brand-mark { border-radius: 11px; }
+  .sitemap-crumb .brand-mark { border-radius: 9px; }
+  code { border-radius: 9px; }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  summary:focus-visible,
+  textarea:focus-visible { border-radius: 14px; }
+
+  .glass::after { corner-shape: inherit; }
+  .brand-mark::after { corner-shape: inherit; }
+}
