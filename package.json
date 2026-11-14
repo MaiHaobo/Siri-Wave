@@ -1,9 +1,9 @@
 {
-  "name": "pc-on-iphone-website",
+  "name": "siri-wave",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Website for PC-on-iPhone, built with Vite and plain CSS frosted glass",
+  "description": "Siri Wave liquid glass effect page",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
